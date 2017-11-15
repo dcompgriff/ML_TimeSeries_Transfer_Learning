@@ -46,7 +46,7 @@ def irisISVM():
     ys = data.target[randomSourceIndexSet]
     ys = np.array(list(map(lambda item: 1 if item == 1 else -1, ys.tolist())))
 
-    lambda1 = .00001
+    lambda1 = 1
     lambda2 = 1
     nt = 50  # The number of target examples.
     ns = 100  # The number of source examples.
@@ -56,35 +56,32 @@ def irisISVM():
 
     # Set up the inductive transfer svm optimization formulation.
     vs = cvx.Variable(td, 1)
-    vt = np.zeros((sd, 1))#cvx.Variable(sd, 1)
-    w0 = np.zeros((wd, 1))#cvx.Variable(wd, 1)
+    vt = cvx.Variable(sd, 1)
+    w0 = cvx.Variable(wd, 1)
     epsilonS = cvx.Variable(ns, 1)
-    epsilonT = np.zeros((nt, 1))#cvx.Variable(nt, 1)
+    epsilonT = cvx.Variable(nt, 1)
 
     # Build the full loss function.
-    #ls = cvx.sum_entries(epsilonS) + ((lambda1/2.0)*cvx.sum_squares(vs))
-    ls = lambda1*cvx.sum_entries(epsilonS) + ((1 / 2.0) * cvx.sum_squares(vs))
-    # lt = cvx.sum_entries(epsilonT) + ((lambda1/2.0)*cvx.sum_squares(vt))
-    # loss = cvx.Minimize(ls + lt + (lambda2*cvx.sum_squares(w0)))
-    loss = cvx.Minimize(ls)
+    ls = cvx.sum_entries(epsilonS) + ((lambda1/2.0)*cvx.sum_squares(vs))
+    lt = cvx.sum_entries(epsilonT) + ((lambda1/2.0)*cvx.sum_squares(vt))
+    loss = cvx.Minimize(ls + lt + (lambda2*cvx.sum_squares(w0)))
 
     # Set up the constraints.
     constraints = []
     for i in range(0, ns):
-        #constraints.append(( ys[i]*Xs[i, :]*(w0 + vs) >= 1 - epsilonS[i]))
-        constraints.append((ys[i] * Xs[i, :] * (vs) >= 1 - epsilonS[i]))
-    # for i in range(0, nt):
-    #     constraints.append(( yt[i]*Xt[i, :]*(w0 + vt) >= 1 - epsilonT[i]))
+        constraints.append(( ys[i]*Xs[i, :]*(w0 + vs) >= 1 - epsilonS[i]))
+    for i in range(0, nt):
+        constraints.append(( yt[i]*Xt[i, :]*(w0 + vt) >= 1 - epsilonT[i]))
     for i in range(0, ns):
         constraints.append((epsilonS[i] >= 0))
-    # for i in range(0, nt):
-    #     constraints.append((epsilonT[i] >= 0))
+    for i in range(0, nt):
+        constraints.append((epsilonT[i] >= 0))
 
     prob = cvx.Problem(loss, constraints)
     print("Optimal value: %f"% prob.solve())
     print("Optimal vs: " + str(vs.value))
-    #print("Optimal vt: " + str(vt.value))
-    #print("Optimal w0: " + str(w0.value))
+    print("Optimal vt: " + str(vt.value))
+    print("Optimal w0: " + str(w0.value))
 
     # Make SVM for source.
     clfs = LinearSVC(random_state=0)
@@ -94,14 +91,12 @@ def irisISVM():
     clft.fit(Xt, yt)
 
     # Calculate and compare errors of ISVM.
-    # sourcePredictedY = predict(Xs, w0.value + vs.value)
-    # targetPredictedY = predict(Xt, w0.value + vt.value)
-    sourcePredictedY = predict(Xs, vs.value)
-    # targetPredictedY = predict(Xt, w0.value + vt.value)
+    sourcePredictedY = predict(Xs, w0.value + vs.value)
+    targetPredictedY = predict(Xt, w0.value + vt.value)
     sourceError = calculateTotalAbsoluteError(sourcePredictedY, ys)/100.0
-    #targetError = calculateTotalAbsoluteError(targetPredictedY, yt)/50.0
+    targetError = calculateTotalAbsoluteError(targetPredictedY, yt)/50.0
     print("Source domain error: %f"%sourceError)
-    #print("Target domain error: %f"%targetError)
+    print("Target domain error: %f"%targetError)
 
     #Calculate and compare errors of regular SVM.
     regSourcePredictedY = predict(Xs, clfs.coef_.reshape(len(clfs.coef_.ravel()), 1))
@@ -110,8 +105,6 @@ def irisISVM():
     regTargetError = calculateTotalAbsoluteError(regTargetPredictedY, yt)/50.0
     print("Regular SVM Source domain error: %f"%regSourceError)
     print("Regular SVM Target domain error: %f"%regTargetError)
-
-
 
 
 if __name__ == "__main__":
