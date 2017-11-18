@@ -107,6 +107,14 @@ def irisISVM():
     print("Regular SVM Target domain error: %f"%regTargetError)
 
 
+'''
+Function applies both a regular SVM and ISVM to the task of classifying the
+phone accelerometer data set.
+'''
+def phoneAccelerometerISVM():
+    pass
+
+
 if __name__ == "__main__":
     irisISVM()
 
