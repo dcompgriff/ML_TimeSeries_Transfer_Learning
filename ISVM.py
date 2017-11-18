@@ -4,6 +4,8 @@ import cvxpy as cvx
 from sklearn.datasets import load_iris
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
+import random
 
 # # Load all phone accelerometer data.
 # phoneAccelData = pd.read_csv("../Activity recognition exp/Phones_accelerometer.csv")
@@ -146,7 +148,7 @@ if __name__ == '__main__':
         print("Training SVM on all data accelerometer data...")
         X = np.array(X)
         y = np.array(y)
-        clfs = LinearSVC(random_state=0)
+        clfs = LinearSVC()
         clfs.fit(X, y)
         print("Done!")
 
@@ -154,14 +156,17 @@ if __name__ == '__main__':
         ypred = predict(X, clfs.coef_.reshape(len(clfs.coef_.ravel()), 1))
         print("Done!")
         error = calculateTotalAbsoluteError(y, ypred) / y.shape[0]
-        print("Accelerometer training error: %f"%error)
+        print("Accelerometer training error (Means kind of nothing): %f"%error)
 
         # Cross validation
         print("Training SVM on accelerometer training only data...")
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1, random_state = 0)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1) #, random_state = 0
         clfs = LinearSVC(random_state=0)
         clfs.fit(X_train, y_train)
         print("Test data mean accuracy SVM score: %f"%clfs.score(X_test, y_test))
+        f1_c0 = f1_score(y_test, clfs.predict(X_test), pos_label=1, average='binary')
+        #print("Test data f1 score for class -1: %f"%(f1_c0))
+        print("Test data f1 score for class +1: %f" % (f1_c0))
         print("Done!")
 
 
