@@ -55,6 +55,63 @@ def generateClassBarChart(data, window):
     plt.title('Class Label Count Bar chart')
     plt.show()
 
+def generateSensorLinePlots(data, window):
+    classes = pd.unique(data['gt'])
+    classPositionDict = {str(key): [] for key in classes}
+
+    count = 0
+    startTime = time.time()
+    pos = 0
+    previousPos = 0
+    windowSliceTupleList = []
+
+    print("Finding time series windows indexes for each class kind...")
+    previousClassLabel = str(data.get_value(data.index[0], 'gt'))
+    while pos < data.shape[0]:
+        if pos % 100000 == 0:
+            startItime = time.time()
+            print("Total Runtime: %f seconds." % (time.time() - startTime))
+
+        classPositionDict[str(data.iloc[pos]['gt'])].append(pos)
+        # Move to the next window
+        pos += window
+    print("Done!")
+
+    # Prune the dict to only the first 3.
+    for key in classPositionDict:
+        classPositionDict[key] = classPositionDict[key][:3]
+
+    # Make a set of sub plots for each class, for each of 3 series, for xyz series data.
+    for label in classes:
+        clabel = str(label)
+        plt.clf()
+        for a in range(0, 3):
+            # Plot the x ts data
+            plt.subplot(311)
+            plt.title(clabel + " series %d x plot"%(a+1))
+            x = data['x'][classPositionDict[clabel][a]:classPositionDict[clabel][a]+window]
+            plt.plot(np.arange(len(x)), x)
+
+            # Plot the y ts data
+            plt.subplot(312)
+            plt.title(clabel + " series %d y plot" % (a + 1))
+            y = data['y'][classPositionDict[clabel][a]:classPositionDict[clabel][a] + window]
+            plt.plot(np.arange(len(y)), y)
+
+            # Plot the z ts data
+            plt.subplot(313)
+            plt.title(clabel + " series %d z plot" % (a + 1))
+            z = data['z'][classPositionDict[clabel][a]:classPositionDict[clabel][a] + window]
+
+            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+            plt.plot(np.arange(len(z)), z)
+            plt.show()
+
+
+
+
+
+
 
 
 def main(args):
@@ -69,6 +126,7 @@ def main(args):
 
     if args.p:
         generateClassBarChart(data, args.t)
+    generateSensorLinePlots(data, args.t)
 
 
 
