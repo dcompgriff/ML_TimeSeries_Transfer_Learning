@@ -110,13 +110,59 @@ def irisISVM():
 '''
 Function applies both a regular SVM and ISVM to the task of classifying the
 phone accelerometer data set.
+
+Note: Initially trying in the "y" accelerometer data.
 '''
 def phoneAccelerometerISVM():
-    pass
+    print("Loading data...")
+    data = pd.read_csv("../Activity recognition exp/Phones_accelerometer_train.csv")
+    print("Done!")
+
+    # Parse data and make bike vs not-biking classification using an SVM.
+    # Note: I'm assuming a window width of 35000
+    print("Finding time series windows indexes for each class kind...")
+    previousClassLabel = str(data.get_value(data.index[0], 'gt'))
+    pos = 0
+    y = []
+    X = []
+    window = 35000
+    while pos < data.shape[0]:
+        # Make y label.
+        if str(data.iloc[pos]['gt']) == 'bike':
+            y.append(1)
+        else:
+            y.append(-1)
+
+        # Make X row.
+        X.append(data.iloc[pos:pos + 35000]['y'])
+
+        # Move to the next window
+        pos += window
+    print("Done!")
+
+    # Build and fit the SVM.
+    print("Training SVM on accelerometer data...")
+    X = np.array(X)
+    y = np.array(y)
+    clfs = LinearSVC(random_state=0)
+    clfs.fit(X, y)
+    print("Done!")
+
+    print("Predicting accelerometer data classes using SVM...")
+    ypred = predict(X, clfs.coef_.reshape(len(clfs.coef_.ravel()), 1))
+    print("Done!")
+    error = calculateTotalAbsoluteError(y, ypred) / y.shape[0]
+    print("Accelerometer training error: %f"%error)
+
+
 
 
 if __name__ == "__main__":
-    irisISVM()
+    # Run this to test the regular SVM and ISVM on the iris data set.
+    #irisISVM()
+
+    # Run this to test the regular SVM and ISVM on the accelerometer data set.
+    phoneAccelerometerISVM()
 
 
 
