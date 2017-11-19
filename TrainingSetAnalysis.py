@@ -109,15 +109,10 @@ def generateSensorLinePlots(data, window):
 
 
 
-
-
-
-
-
 def main(args):
     # Load all phone accelerometer data.
     print("Loading data...")
-    data = pd.read_csv(args.input_file)
+    data = pd.read_csv(args.input_file, index_col="Index", sep=",")
     print("Done!")
     # print("Sorting data by arrival time...")
     # data = data.sort_values(by=['Arrival_Time'])
@@ -134,7 +129,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process sensor data, and generate histograms and training data.')
     parser.add_argument('input_file', help='Input .csv file to read sensor data from.')
     parser.add_argument('-p', action='store_true', help='Generate bar chart for the number of each kind of example.')
-    parser.add_argument('-t', type=int, default=35000, help='Window width size used to generate the training example.')
+    parser.add_argument('-t', type=int, default=5000, help='Window width size used to generate the training example.')
     args = parser.parse_args()
 
     main(args)

@@ -3,6 +3,7 @@ import pandas as pd
 import cvxpy as cvx
 from sklearn.datasets import load_iris
 from sklearn.svm import LinearSVC
+import sklearn.svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import random
@@ -11,6 +12,8 @@ import random
 # phoneAccelData = pd.read_csv("../Activity recognition exp/Phones_accelerometer.csv")
 # # Load a single set of time for data.
 # dat1Entry = phoneAccelData[0:1362520]
+from sklearn.svm.classes import SVC
+
 
 def calculateTotalAbsoluteError(yPredicted, yOriginal):
     count = 0
@@ -119,7 +122,7 @@ Note: Initially trying in the "y" accelerometer data.
 if __name__ == '__main__':
     def phoneAccelerometerISVM():
         print("Loading data...")
-        data = pd.read_csv("../Activity recognition exp/Phones_accelerometer_train.csv")
+        data = pd.read_csv("./Train_Phone-Acc-nexus4_1-a.csv")
         print("Done!")
 
         # Parse data and make bike vs not-biking classification using an SVM.
@@ -129,16 +132,16 @@ if __name__ == '__main__':
         pos = 0
         y = []
         X = []
-        window = 35000
+        window = 500
         while pos < data.shape[0]:
             # Make y label.
-            if str(data.iloc[pos]['gt']) == 'bike':
+            if str(data.iloc[pos]['gt']) == 'walk':
                 y.append(1)
             else:
                 y.append(-1)
 
             # Make X row.
-            X.append(data.iloc[pos:pos + 35000]['y'])
+            X.append(data.iloc[pos:pos + window]['y'])
 
             # Move to the next window
             pos += window
@@ -148,21 +151,24 @@ if __name__ == '__main__':
         print("Training SVM on all data accelerometer data...")
         X = np.array(X)
         y = np.array(y)
-        clfs = LinearSVC()
+        #clfs = LinearSVC()
+        clfs = SVC()
         clfs.fit(X, y)
         print("Done!")
 
-        print("Predicting accelerometer classes on all data using SVM...")
-        ypred = predict(X, clfs.coef_.reshape(len(clfs.coef_.ravel()), 1))
-        print("Done!")
-        error = calculateTotalAbsoluteError(y, ypred) / y.shape[0]
-        print("Accelerometer training error (Means kind of nothing): %f"%error)
+        # print("Predicting accelerometer classes on all data using SVM...")
+        # ypred = predict(X, clfs.coef_.reshape(len(clfs.coef_.ravel()), 1))
+        # print("Done!")
+        # error = calculateTotalAbsoluteError(y, ypred) / y.shape[0]
+        # print("Accelerometer training error (Means kind of nothing): %f"%error)
 
         # Cross validation
         print("Training SVM on accelerometer training only data...")
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1) #, random_state = 0
-        clfs = LinearSVC(random_state=0)
+        clfs = SVC()
         clfs.fit(X_train, y_train)
+        yhat = clfs.predict(X_test)
+        print("Abs Error = %f"%( calculateTotalAbsoluteError(yhat, y_test)/len(yhat)))
         print("Test data mean accuracy SVM score: %f"%clfs.score(X_test, y_test))
         f1_c0 = f1_score(y_test, clfs.predict(X_test), pos_label=1, average='binary')
         #print("Test data f1 score for class -1: %f"%(f1_c0))
