@@ -45,7 +45,7 @@ def main(args):
     plt.show()
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('input_file', help='Input .csv file to read sensor data from.')
+    parser.add_argument('input_file', help='Input single source .csv file to read sensor data from.')
     args = parser.parse_args()
     
     main(args)
