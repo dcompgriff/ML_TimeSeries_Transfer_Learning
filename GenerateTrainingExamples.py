@@ -143,7 +143,7 @@ def generateTrainingExamples(threshold, output, phoneAccelData):
     fixedWidthPhoneAccelData = pd.concat(fixedWidthWindowList)
     print("Done!")
     print("Writing training set dataframe to output file...")
-    fixedWidthPhoneAccelData.to_csv(output)
+    fixedWidthPhoneAccelData.to_csv(output,index=False)
     print("Done!")
 
 def main(args):
