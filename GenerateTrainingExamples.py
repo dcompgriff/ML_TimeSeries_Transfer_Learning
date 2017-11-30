@@ -169,7 +169,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process sensor data, and generate histograms and training data.')
     parser.add_argument('input_file', help='Input .csv file to read sensor data from.')
     parser.add_argument('-p', action='store_true', help='Generate visual histogram plot of widths of each activity in the data set.')
-    parser.add_argument('-t', type=int, default=35000, help='Window width size to generate for training example data set. '
+    parser.add_argument('-t', type=int, default=500, help='Window width size to generate for training example data set. '
                                             '\nBase thresholds:\n'
                                             'Phone Accelerometer/Gyroscope: 35000\n'
                                                   'Watch Accelerometer/Gyroscope: 10000')

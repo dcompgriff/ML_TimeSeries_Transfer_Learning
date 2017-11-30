@@ -84,8 +84,8 @@ class BayesNet:
             sumXj_1 = np.sum(X_1[:, j - 1])
             M = -1 * np.sum(X_1[:, j] * X_1[:, j - 1])
             K = -1 * np.sum(X_1[:, j - 1] * X_1[:, j - 1])
-            L = (-1 / n1) * sumXj * sumXj_1
-            P = (-1 / n1) * sumXj_1 * sumXj_1
+            L = (-1 / n_1) * sumXj * sumXj_1
+            P = (-1 / n_1) * sumXj_1 * sumXj_1
             a_1[j] = (M + L) / (K + P)
 
         # 5)
@@ -93,10 +93,10 @@ class BayesNet:
         b_1 = np.zeros((X_1.shape[1], 1))
         # Calculate bi for class 1
         for j in range(1, X1.shape[1]):
-            b1[j] = (-1 / n1) * (np.sum(X1[:, j])) * (-1 * a1[j] * np.sum(X1[:, j - 1]))
+            b1[j] = (-1 / n1**2) * (np.sum(X1[:, j])) * (-1 * a1[j] * np.sum(X1[:, j - 1]))
         # Calculate bi for class -1
         for j in range(1, X_1.shape[1]):
-            b_1[j] = (-1 / n1) * (np.sum(X_1[:, j])) * (-1 * a_1[j] * np.sum(X_1[:, j - 1]))
+            b_1[j] = (-1 / n_1**2) * (np.sum(X_1[:, j])) * (-1 * a_1[j] * np.sum(X_1[:, j - 1]))
 
         # 6)
         # Base probability of class y
@@ -122,13 +122,15 @@ class BayesNet:
         # Initialize to prior probability of y
         probability = self._py[y]
         # Multiply gaussian prior probability variable x[0]
-        const = (1/((2*np.pi*self._nodeList[0][y][1])**.5))
-        probability *= const*np.exp(-.5* (((x[0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) )
+        const = (1.0/((2*np.pi*self._nodeList[0][y][1])**.5))
+        #probability = probability*const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) )
+        #probability = probability*const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) )
         # Multiply out all other prior probability variables.
         for j in range(1, x.shape[1]):
-            const = (1/((2*np.pi*self._nodeList[j][y][2])**.5))
-            linearMeanTerm = self._nodeList[j][y][0]*x[j-1] + self._nodeList[j][y][1]
-            probability *= const*np.exp(-.5*(  (x[j] - ((linearMeanTerm)**2)/self._nodeList[j][y][2])  ))
+            const = (1.0/((2*np.pi*self._nodeList[j][y][2])**.5))
+            linearMeanTerm = self._nodeList[j][y][0]*x[0, j-1] + self._nodeList[j][y][1]
+            probability = probability*const*np.exp(-.5*(  ( (x[0, j] - linearMeanTerm)**2)/self._nodeList[j][y][2])  )
+            #print("Found prob greater than 0!!!: %f" % (probability))
 
         return probability
 
@@ -157,7 +159,7 @@ def buildBayesNet():
     window = 500
     while pos < data.shape[0]:
         # Make y label.
-        if str(data.iloc[pos]['gt']) == 'sit':
+        if str(data.iloc[pos]['gt']) == 'walk':
             y.append(1)
         else:
             y.append(-1)
@@ -246,6 +248,7 @@ def buildBayesNet():
 def main():
     print("Loading data...")
     data = pd.read_csv("./Train_Phone-Acc-nexus4_1-a.csv")
+    data2 = pd.read_csv("./Train_Phone-Acc-nexus4_1-b.csv")
     print("Done!")
 
     # Parse data and make bike vs not-biking classification using an SVM.
@@ -255,16 +258,33 @@ def main():
     pos = 0
     y = []
     X = []
+    yt = []
+    Xt = []
     window = 500
     while pos < data.shape[0]:
         # Make y label.
-        if str(data.iloc[pos]['gt']) == 'sit':
+        if str(data.iloc[pos]['gt']) == 'stairsup':
             y.append(1)
         else:
             y.append(-1)
 
         # Make X row.
         X.append(data.iloc[pos:pos + window]['y'])
+
+        # Move to the next window
+        pos += window
+
+    pos = 0
+    window = 500
+    while pos < data2.shape[0]:
+        # Make yt label.
+        if str(data2.iloc[pos]['gt']) == 'walk':
+            yt.append(1)
+        else:
+            yt.append(-1)
+
+        # Make Xt row.
+        Xt.append(data2.iloc[pos:pos + window]['y'])
 
         # Move to the next window
         pos += window
@@ -276,10 +296,28 @@ def main():
     # Y is nx1, belonging either to class -1 or +1
     y = np.array(y)
 
+    Xt = np.array(Xt)
+    # Y is nx1, belonging either to class -1 or +1
+    yt = np.array(yt)
+
+    # Subsample the window to a width of 50.
+    X = X[:, list(range(0, 500, 25))]
+
+    Xt = Xt[:, list(range(0, 500, 25))]
+
+
     sourceBayesNet = BayesNet()
     sourceBayesNet.learn(X, y)
+    mlist = []
     for i in range(0, X.shape[0]):
-        print("Probability for example %d is: %f"%(i, sourceBayesNet.probability(X[i,:].reshape((X[i,:].shape[0], 1)), y[i])))
+        #val = sourceBayesNet.probability(X[i,:].reshape((X[i,:].shape[0], 1)), y[i])
+        #mlist.append(val)
+        print("Probability for example %d is: %.20f"%(i, sourceBayesNet.probability(X[i,:].reshape((1, X[i,:].shape[0])), y[i])))
+
+    for i in range(0, Xt.shape[0]):
+        #val = sourceBayesNet.probability(X[i,:].reshape((X[i,:].shape[0], 1)), y[i])
+        #mlist.append(val)
+        print("Probability for example %d is: %.20f"%(i, sourceBayesNet.probability(Xt[i,:].reshape((1, Xt[i,:].shape[0])), yt[i])))
 
 
 
