@@ -2,3 +2,4 @@
 .project
 .pydevproject
 *.csv
+__pycache__/*

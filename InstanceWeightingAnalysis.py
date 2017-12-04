@@ -111,9 +111,9 @@ def main(args):
            weights.append(10)
         for i in range(0, X.shape[0]):
             #pSource = sourceBayesNet.probability(Xt_test[i,:].reshape((1, Xt_test[i,:].shape[0])), yt_test[i])
-            pTarget = targetBayesNet.probability(GenX_train[i,:].reshape((1, GenX_train[i,:].shape[0])), y[i])
-            weights.append(pTarget*1000000)
-            #weights.append(random.uniform(0, 2))
+            #pTarget = targetBayesNet.probability(GenX_train[i,:].reshape((1, GenX_train[i,:].shape[0])), y[i])
+            #weights.append(pTarget*1000000)
+            weights.append(random.uniform(0, 2))
         #print("Done!")
 
         # Build the weighted SVM.
@@ -172,10 +172,12 @@ def main(args):
     print("SVM Std. Dev mean Accuracy = %f" % (np.std(unweightedMeanAccuracyList)))
 
 
+    n = 100
+    pStd = ( ( ((n-1)*np.std(weightedMeanAccuracyList)) + ((n-1)*np.std(unweightedMeanAccuracyList))) / (2*n - 2) )**.5
+    t = ( (np.mean(weightedMeanAccuracyList) - (np.mean(unweightedMeanAccuracyList))) / (pStd*((2/n)**.5)) )
 
-
-
-
+    print(pStd)
+    print(t)
 
 
 

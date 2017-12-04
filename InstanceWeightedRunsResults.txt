@@ -1,0 +1,70 @@
+Statistically Significant Results Runner:
+http://www.socscistatistics.com/confidenceinterval/Default4.aspx
+
+#################################################################
+ACTUAL WEIGHTS
+#################################################################
+#Test set size: 
+
+#30 Runs
+Evaluating SVMs on test set...
+Weighted SVM Abs Error = 0.116667
+Weighted SVM mean accuracy score: 0.883333
+Weighted SVM f1 score: 0.631579
+
+SVM Abs Error = 0.133333
+SVM mean accuracy score: 0.866667
+SVM f1 score: 0.555556
+
+
+#100 Runs
+Weighted SVM Average Error = 0.138833
+Weighted SVM Average fscore = 0.513500
+Weighted SVM Average mean Accuracy = 0.861167
+
+Weighted SVM Std. Dev = 0.029160
+Weighted SVM Std. Dev fscore = 0.154009
+Weighted SVM Std. Dev mean Accuracy = 0.029160
+
+SVM Average Error = 0.155333
+SVM Average fscore = 0.426550
+SVM Average mean Accuracy = 0.844667
+
+SVM Std. Dev = 0.026862
+SVM Std. Dev fscore = 0.153483
+SVM Std. Dev mean Accuracy = 0.026862
+0.167364550301
+0.697116675459
+
+#################################################################
+RANDOM WEIGHTS
+#################################################################
+#Test set size:
+
+Weighted SVM Average Error = 0.157000
+Weighted SVM Average fscore = 0.419460
+Weighted SVM Average mean Accuracy = 0.843000
+
+Weighted SVM Std. Dev = 0.024173
+Weighted SVM Std. Dev fscore = 0.142945
+Weighted SVM Std. Dev mean Accuracy = 0.024173
+
+SVM Average Error = 0.154833
+SVM Average fscore = 0.434094
+SVM Average mean Accuracy = 0.845167
+
+SVM Std. Dev = 0.022397
+SVM Std. Dev fscore = 0.124566
+SVM Std. Dev mean Accuracy = 0.022397
+0.1525946987
+-0.100400912064
+
+
+
+
+
+
+
+
+
+
