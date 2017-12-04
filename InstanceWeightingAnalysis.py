@@ -78,7 +78,16 @@ def main(args):
     # Y is nx1, belonging either to class -1 or +1
     yt = np.array(yt)
 
-    for k in range(0, 10):
+
+    weightedErrorList = []
+    unweightedErrorList = []
+    weightedFscoreList = []
+    unweightedFscoreList = []
+    weightedMeanAccuracyList = []
+    unweightedMeanAccuracyList = []
+    for k in range(0, 100):
+        if k % 1 == 0:
+            print("Iteration %d"%(k))
 
         Xt_train, Xt_test, yt_train, yt_test = train_test_split(Xt, yt, stratify=yt, test_size=0.1)  # , random_state = 0
 
@@ -88,15 +97,15 @@ def main(args):
         GenXt_train = Xt_train[:, list(range(0, 500, 50))]
 
         # Build the target bayes net.
-        print("Building bayes net...")
+        #print("Building bayes net...")
         sourceBayesNet = GenerativeBayesNet.BayesNet()
         sourceBayesNet.learn(GenX_train, y)
         targetBayesNet = GenerativeBayesNet.BayesNet()
         targetBayesNet.learn(GenXt_train, yt_train)
-        print("Done!")
+        #print("Done!")
 
         # Build the weights list.
-        print("Building weight list...")
+        #print("Building weight list...")
         weights = []
         for i in range(0, Xt_train.shape[0]):
            weights.append(10)
@@ -105,39 +114,62 @@ def main(args):
             pTarget = targetBayesNet.probability(GenX_train[i,:].reshape((1, GenX_train[i,:].shape[0])), y[i])
             weights.append(pTarget*1000000)
             #weights.append(random.uniform(0, 2))
-        print("Done!")
+        #print("Done!")
 
         # Build the weighted SVM.
-        print("Building weighted SVM...")
+        #print("Building weighted SVM...")
         Xsource_and_target = np.vstack((Xt_train, X))
         Ysource_and_target = np.vstack((yt_train.reshape((len(yt_train), 1)), y.reshape((len(y), 1))))
         clfsc = SVC()
         clfsc.fit(Xsource_and_target, Ysource_and_target, sample_weight=weights)
         yhatCombined = clfsc.predict(Xt_test)
-        print("Done!")
+        #print("Done!")
 
         # Build the regular SVM.
-        print("Building regular SVM...")
+        #print("Building regular SVM...")
         clfs = SVC()
         clfs.fit(Xt_train, yt_train)
         yhatTargetOnly = clfs.predict(Xt_test)
-        print("Done!")
+        #print("Done!")
 
         # Evaluate both SVMs.
-        print()
-        print("Evaluating SVMs on test set...")
-        print("Weighted SVM Abs Error = %f"%(calculateTotalAbsoluteError(yhatCombined, yt_test)/len(yt_test)))
-        print("Weighted SVM mean accuracy score: %f"%clfsc.score(Xt_test, yt_test))
-        f1 = f1_score(yt_test, yhatCombined, pos_label=1, average='binary')
-        print("Weighted SVM f1 score: %f" % (f1))
+        weightedErrorList.append(calculateTotalAbsoluteError(yhatCombined, yt_test)/len(yt_test))
+        weightedFscoreList.append(f1_score(yt_test, yhatCombined, pos_label=1, average='binary'))
+        unweightedErrorList.append(calculateTotalAbsoluteError(yhatTargetOnly, yt_test)/len(yt_test))
+        unweightedFscoreList.append(f1_score(yt_test, yhatTargetOnly, pos_label=1, average='binary'))
+        weightedMeanAccuracyList.append(clfsc.score(Xt_test, yt_test))
+        unweightedMeanAccuracyList.append(clfs.score(Xt_test, yt_test))
 
-        print()
-        print("SVM Abs Error = %f"%(calculateTotalAbsoluteError(yhatTargetOnly, yt_test)/len(yt_test)))
-        print("SVM mean accuracy score: %f"%clfs.score(Xt_test, yt_test))
-        f1 = f1_score(yt_test, yhatTargetOnly, pos_label=1, average='binary')
-        print("SVM f1 score: %f" % (f1))
+        # print()
+        # print("Evaluating SVMs on test set...")
+        # print("Weighted SVM Abs Error = %f"%(calculateTotalAbsoluteError(yhatCombined, yt_test)/len(yt_test)))
+        # print("Weighted SVM mean accuracy score: %f"%clfsc.score(Xt_test, yt_test))
+        # f1 = f1_score(yt_test, yhatCombined, pos_label=1, average='binary')
+        # print("Weighted SVM f1 score: %f" % (f1))
+        #
+        # print()
+        # print("SVM Abs Error = %f"%(calculateTotalAbsoluteError(yhatTargetOnly, yt_test)/len(yt_test)))
+        # print("SVM mean accuracy score: %f"%clfs.score(Xt_test, yt_test))
+        # f1 = f1_score(yt_test, yhatTargetOnly, pos_label=1, average='binary')
+        # print("SVM f1 score: %f" % (f1))
 
+    print()
+    print("Weighted SVM Average Error = %f"%(np.average(weightedErrorList)))
+    print("Weighted SVM Average fscore = %f" % (np.average(weightedFscoreList)))
+    print("Weighted SVM Average mean Accuracy = %f"%(np.average(weightedMeanAccuracyList)))
+    print()
+    print("Weighted SVM Std. Dev = %f" % (np.std(weightedErrorList)))
+    print("Weighted SVM Std. Dev fscore = %f" % (np.std(weightedFscoreList)))
+    print("Weighted SVM Std. Dev mean Accuracy = %f" % (np.std(weightedMeanAccuracyList)))
 
+    print()
+    print("SVM Average Error = %f" % (np.average(unweightedErrorList)))
+    print("SVM Average fscore = %f" % (np.average(unweightedFscoreList)))
+    print("SVM Average mean Accuracy = %f"%(np.average(unweightedMeanAccuracyList)))
+    print()
+    print("SVM Std. Dev = %f" % (np.std(unweightedErrorList)))
+    print("SVM Std. Dev fscore = %f" % (np.std(unweightedFscoreList)))
+    print("SVM Std. Dev mean Accuracy = %f" % (np.std(unweightedMeanAccuracyList)))
 
 
 
