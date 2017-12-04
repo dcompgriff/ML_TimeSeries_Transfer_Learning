@@ -1,9 +1,4 @@
-#imports
-import numpy as np;
-import pandas as pd;
-import matplotlib.pyplot as plt;
 import sklearn.gaussian_process.kernels as kers;
-
 #Constants
 myKernels={
     'k_Constant':kers.ConstantKernel(),
@@ -24,10 +19,3 @@ myKernels={
     'k6':kers.Product(kers.ConstantKernel(),kers.Product(kers.RBF(),kers.ExpSineSquared())),
     'k7':kers.Sum(kers.ConstantKernel(),kers.Product(kers.ConstantKernel(),kers.Product(kers.RBF(),kers.ExpSineSquared())))
     }
-#for key, value in myKernels.items():
-#    print(key+","+str(len(value.theta)))
-#print(kers.Matern().get_params())
-l=[[key,value] for key, value in myKernels.items()]
-l=[[k[0],[p for p in k[1].hyperparameters]]for k in l]
-#print([[key,[p['name'] for p in value.hyperparameters]] for key, value in myKernels.items()])
-print(l)
