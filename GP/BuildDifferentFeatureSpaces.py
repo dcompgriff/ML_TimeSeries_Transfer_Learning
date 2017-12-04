@@ -132,7 +132,7 @@ def main(args):
     f = open(outFile,'w')
     for k_,kernel in myKernels.items():#for each kernel
         print(k_)
-        f.write("Kernel: "+kernel+"\n")
+        f.write("Kernel: "+k_+"\n")
         left = 0
         right = len(ls)
         Xmod = getGaussianFeatureSpace(kernel, ts, xts, yts, zts, left, right)
