@@ -139,7 +139,6 @@ def main(args):
         ymod = ls[left:right]
         for i in range(0,len(ymod)):
             f.write(str(i)+"\t"+np.array2string(Xmod[i],separator=",")+"\t"+str(ymod[i])+"\n")
-        break
     f.close()
 
 #errors,testSize=errorInSVM(Xmod,ymod)
