@@ -71,15 +71,15 @@ def getGaussianFeatureSpace(kernel, t, x, y, z, left = 245, right = 255):
         # kernel = RationalQuadratic()
         print("Done: ", i)
         finalFeatures.append([])
-        gpx = GaussianProcessRegressor(kernel,optimizer='fmin_l_bfgs_b',\
+        gpx = GaussianProcessRegressor(kernel(),optimizer='fmin_l_bfgs_b',\
                                        copy_X_train=False, normalize_y=True)
         gpx.fit(t[i,:].reshape(-1, 1) - t[i,0], x[i,:])
         
-        gpy = GaussianProcessRegressor(kernel,optimizer='fmin_l_bfgs_b',\
+        gpy = GaussianProcessRegressor(kernel(),optimizer='fmin_l_bfgs_b',\
                                        copy_X_train=False, normalize_y=True)
         gpy.fit(t[i,:].reshape(-1, 1) - t[i,0], y[i,:])
         
-        gpz = GaussianProcessRegressor(kernel,optimizer='fmin_l_bfgs_b',\
+        gpz = GaussianProcessRegressor(kernel(),optimizer='fmin_l_bfgs_b',\
                                        copy_X_train=False, normalize_y=True)
         gpz.fit(t[i,:].reshape(-1, 1) - t[i,0], z[i,:])
         
@@ -128,15 +128,15 @@ def main(args):
     Ds = pd.read_csv(sourceData)
     #break into data as time series
     ts, xts, yts, zts, ls = makeTimeSeries(Ds,width)
-    outFile=sourceData[:-4]+"_features.csv"
-    f = open(outFile,'w')
+    outFile=sourceData[:-4]+"_features.txt"
+    f = open(outFile,'a')
     for k_,kernel in myKernels.items():#for each kernel
         print(k_)
-        f.write("Kernel: "+k_+"\n")
         left = 0
         right = len(ls)
         Xmod = getGaussianFeatureSpace(kernel, ts, xts, yts, zts, left, right)
         ymod = ls[left:right]
+        f.write("Kernel: "+k_+"\n")
         for i in range(0,len(ymod)):
             f.write(str(i)+"\t"+np.array2string(Xmod[i],separator=",")+"\t"+str(ymod[i])+"\n")
     f.close()
