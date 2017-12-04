@@ -8,6 +8,14 @@ kind of Hidden Markov Model with the restriction that there is only one
 unobserved state (The class node), which is tied to all of the observation
 data.
 
+
+Methods for weighting:
+1) Subsampled joint probability from a bayes net
+2) Inverse sum of log probabilities
+3) Inverse sum of deviations from 5 to 10 node bayes net reconstruction
+given the time series data set.
+
+
 '''
 import numpy as np
 import pandas as pd
@@ -123,7 +131,7 @@ class BayesNet:
         probability = self._py[y]
         # Multiply gaussian prior probability variable x[0]
         const = (1.0/((2*np.pi*self._nodeList[0][y][1])**.5))
-        #probability = probability*const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) )
+        probability = probability*const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) )
         #probability = probability*const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) )
         # Multiply out all other prior probability variables.
         for j in range(1, x.shape[1]):
@@ -131,6 +139,32 @@ class BayesNet:
             linearMeanTerm = self._nodeList[j][y][0]*x[0, j-1] + self._nodeList[j][y][1]
             probability = probability*const*np.exp(-.5*(  ( (x[0, j] - linearMeanTerm)**2)/self._nodeList[j][y][2])  )
             #print("Found prob greater than 0!!!: %f" % (probability))
+
+        return probability
+
+    def logprobability(self, x, y):
+        # Initialize to prior probability of y
+        probability = np.log(self._py[y])
+        # Multiply gaussian prior probability variable x[0]
+        const = (1.0/((2*np.pi*self._nodeList[0][y][1])**.5))
+        probability = probability + np.log(const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) ))
+        probability = probability + np.log(const*np.exp(-.5* (((x[0,0] - self._nodeList[0][y][0])**2)/self._nodeList[0][y][1]) ))
+        # Multiply out all other prior probability variables.
+        for j in range(1, x.shape[1]):
+            const = (1.0/((2*np.pi*self._nodeList[j][y][2])**.5))
+            linearMeanTerm = self._nodeList[j][y][0]*x[0, j-1] + self._nodeList[j][y][1]
+            probability = probability + np.log(const*np.exp(-.5*(  ( (x[0, j] - linearMeanTerm)**2)/self._nodeList[j][y][2])  ))
+            #print("Found prob greater than 0!!!: %f" % (probability))
+
+        return -1*probability
+
+    '''
+    Just for testing.
+    '''
+    def gausprobability(self, means, covMat, det, x, y):
+        # Initialize to prior probability of y
+        probability = (1.0/((2*np.pi*det)**.5))
+        probability *= np.exp(-.5*( (x - means).dot(covMat).dot((x-means).T)[0][0] ))
 
         return probability
 
@@ -263,7 +297,7 @@ def main():
     window = 500
     while pos < data.shape[0]:
         # Make y label.
-        if str(data.iloc[pos]['gt']) == 'stairsup':
+        if str(data.iloc[pos]['gt']) == 'sit':
             y.append(1)
         else:
             y.append(-1)
@@ -275,6 +309,7 @@ def main():
         pos += window
 
     pos = 0
+
     window = 500
     while pos < data2.shape[0]:
         # Make yt label.
@@ -301,26 +336,33 @@ def main():
     yt = np.array(yt)
 
     # Subsample the window to a width of 50.
-    X = X[:, list(range(0, 500, 25))]
+    X = X[:, list(range(0, 500, 50))]
+    Xt = Xt[:, list(range(0, 500, 50))]
 
-    Xt = Xt[:, list(range(0, 500, 25))]
 
+    meansX = np.mean(X, axis=0)
+    cov = np.linalg.inv(np.cov(X.T))
+    det = np.linalg.det(cov)
 
     sourceBayesNet = BayesNet()
     sourceBayesNet.learn(X, y)
+    targetBayesNet = BayesNet()
+    targetBayesNet.learn(Xt, yt)
     mlist = []
     for i in range(0, X.shape[0]):
         #val = sourceBayesNet.probability(X[i,:].reshape((X[i,:].shape[0], 1)), y[i])
-        #mlist.append(val)
-        print("Probability for example %d is: %.20f"%(i, sourceBayesNet.probability(X[i,:].reshape((1, X[i,:].shape[0])), y[i])))
+        #mlist.append(val)r
+        print("Probability for example %d is: %.20f"%(i, 100000*(sourceBayesNet.probability(X[i,:].reshape((1, X[i,:].shape[0])), y[i]))))
 
+    weights = []
     for i in range(0, Xt.shape[0]):
         #val = sourceBayesNet.probability(X[i,:].reshape((X[i,:].shape[0], 1)), y[i])
         #mlist.append(val)
-        print("Probability for example %d is: %.20f"%(i, sourceBayesNet.probability(Xt[i,:].reshape((1, Xt[i,:].shape[0])), yt[i])))
+        pSource = sourceBayesNet.probability(Xt[i,:].reshape((1, Xt[i,:].shape[0])), yt[i])
+        pTarget = targetBayesNet.probability(Xt[i,:].reshape((1, Xt[i,:].shape[0])), yt[i])
+        weights.append(pTarget*100000)
 
-
-
+        print("Weight for example %d is: %.20f"%(i, weights[i]))
 
 
 
