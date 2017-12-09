@@ -360,7 +360,7 @@ def main():
         #mlist.append(val)
         pSource = sourceBayesNet.probability(Xt[i,:].reshape((1, Xt[i,:].shape[0])), yt[i])
         pTarget = targetBayesNet.probability(Xt[i,:].reshape((1, Xt[i,:].shape[0])), yt[i])
-        weights.append(pTarget*100000)
+        weights.append(pTarget*1000000)
 
         print("Weight for example %d is: %.20f"%(i, weights[i]))
 

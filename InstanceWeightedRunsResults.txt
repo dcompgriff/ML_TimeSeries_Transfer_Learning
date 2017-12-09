@@ -59,11 +59,32 @@ SVM Std. Dev mean Accuracy = 0.022397
 0.1525946987
 -0.100400912064
 
+Weighted
+Max: 1.15777924
+Min: 1.11211334e-08
+
+Unweighted
+Max: 0.49956442002767587
+Min: 0.00012906391418088248
 
 
+Weighted SVM Average Error = 0.146667
+Weighted SVM Average fscore = 0.478594
+Weighted SVM Average mean Accuracy = 0.853333
 
+Weighted SVM Std. Dev = 0.022730
+Weighted SVM Std. Dev fscore = 0.123923
+Weighted SVM Std. Dev mean Accuracy = 0.022730
 
+SVM Average Error = 0.148500
+SVM Average fscore = 0.468456
+SVM Average mean Accuracy = 0.851500
 
+SVM Std. Dev = 0.022985
+SVM Std. Dev fscore = 0.126862
+SVM Std. Dev mean Accuracy = 0.022985
+0.151187303125
+0.085745456489
 
 
 

@@ -107,13 +107,13 @@ def main(args):
         # Build the weights list.
         #print("Building weight list...")
         weights = []
-        for i in range(0, Xt_train.shape[0]):
-           weights.append(10)
+        #for i in range(0, Xt_train.shape[0]):
+        #   weights.append(10)
         for i in range(0, X.shape[0]):
             #pSource = sourceBayesNet.probability(Xt_test[i,:].reshape((1, Xt_test[i,:].shape[0])), yt_test[i])
             pTarget = targetBayesNet.probability(GenX_train[i,:].reshape((1, GenX_train[i,:].shape[0])), y[i])
             weights.append(pTarget*1000000)
-            #weights.append(random.uniform(0, 2))
+            #weights.append(random.uniform(0, 0.5))
         #print("Done!")
 
         # Build the weighted SVM.
