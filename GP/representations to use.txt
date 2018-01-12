@@ -1,0 +1,20 @@
+kernal (dimension of feature space)
+
+constant(1)
+White noise(1)
+
+Gaussian/SE/RBF(1)
+Matern(1) # nu is not optimized
+RationalQuadratic(2)
+ExpSineSquared(2) # periodicity
+dotProduct on (x,y,z) for each t (1)
+
+#since we need periodicity, we combine with ESS
+
+C+ESS(3)
+C.ESS(3)
+C+C.ESS(4)
+C+RBF*ESS(4)
+C*RBF+C*ESS(5) # central is RBF, deviation is periodic
+C*RBF*ESS(4)
+C+C*RBF*ESS(5)
